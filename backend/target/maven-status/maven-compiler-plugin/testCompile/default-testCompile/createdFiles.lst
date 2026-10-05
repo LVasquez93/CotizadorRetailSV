@@ -1,2 +1,3 @@
 com\retail\cotizador\CatalogoServiceTest.class
+com\retail\cotizador\AuthIntegrationTest.class
 com\retail\cotizador\PdfGeneratorServiceTest.class

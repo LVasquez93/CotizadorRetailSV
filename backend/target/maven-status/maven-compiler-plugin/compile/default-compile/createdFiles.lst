@@ -1,4 +1,5 @@
 com\retail\cotizador\clientes\entity\Cliente.class
+com\retail\cotizador\auth\security\UserDetailsServiceImpl.class
 com\retail\cotizador\common\config\CorsConfig.class
 com\retail\cotizador\cotizaciones\service\PdfGeneratorService.class
 com\retail\cotizador\CotizadorApplication.class
@@ -10,7 +11,9 @@ com\retail\cotizador\sucursales\repository\SucursalRepository.class
 com\retail\cotizador\usuarios\controller\UsuarioController.class
 com\retail\cotizador\common\config\DataInitializer.class
 com\retail\cotizador\equipos\service\EquipoService.class
+com\retail\cotizador\auth\dto\LoginRequestDto$LoginRequestDtoBuilder.class
 com\retail\cotizador\usuarios\dto\UsuarioDto.class
+com\retail\cotizador\auth\dto\AuthResponseDto$AuthResponseDtoBuilder.class
 com\retail\cotizador\sucursales\service\SucursalService.class
 com\retail\cotizador\cotizaciones\controller\CotizacionController.class
 com\retail\cotizador\cotizaciones\dto\ItemDto$ItemDtoBuilder.class
@@ -18,13 +21,16 @@ com\retail\cotizador\equipos\controller\EquipoController.class
 com\retail\cotizador\sucursales\entity\Sucursal$SucursalBuilder.class
 com\retail\cotizador\cotizaciones\dto\ItemDto.class
 com\retail\cotizador\sucursales\entity\Sucursal.class
+com\retail\cotizador\auth\dto\LoginRequestDto.class
 com\retail\cotizador\usuarios\dto\UsuarioDto$UsuarioDtoBuilder.class
+com\retail\cotizador\auth\security\UserPrincipal.class
 com\retail\cotizador\equipos\dto\EquipoDto.class
 com\retail\cotizador\usuarios\service\UsuarioService.class
 com\retail\cotizador\common\dto\PageResponseDto.class
 com\retail\cotizador\cotizaciones\dto\CotizacionRequestDto$CotizacionRequestDtoBuilder.class
 com\retail\cotizador\cotizaciones\service\CotizacionService.class
 com\retail\cotizador\cotizaciones\entity\Cotizacion$CotizacionBuilder.class
+com\retail\cotizador\auth\dto\AuthResponseDto.class
 com\retail\cotizador\clientes\service\ClienteService.class
 com\retail\cotizador\equipos\entity\Equipo$EquipoBuilder.class
 com\retail\cotizador\usuarios\repository\UsuarioRepository.class
@@ -35,6 +41,9 @@ com\retail\cotizador\usuarios\entity\Usuario$UsuarioBuilder.class
 com\retail\cotizador\cotizaciones\entity\ItemCotizacion$ItemCotizacionBuilder.class
 com\retail\cotizador\cotizaciones\repository\CotizacionRepository.class
 com\retail\cotizador\sucursales\dto\SucursalDto$SucursalDtoBuilder.class
+com\retail\cotizador\auth\controller\AuthController.class
+com\retail\cotizador\auth\filter\JwtAuthenticationFilter.class
+com\retail\cotizador\auth\service\JwtService.class
 com\retail\cotizador\equipos\entity\Equipo.class
 com\retail\cotizador\clientes\dto\ClienteDto$ClienteDtoBuilder.class
 com\retail\cotizador\common\exception\ResourceNotFoundException.class
@@ -46,5 +55,7 @@ com\retail\cotizador\cotizaciones\dto\CotizacionRequestDto.class
 com\retail\cotizador\sucursales\controller\SucursalController.class
 com\retail\cotizador\cotizaciones\entity\ItemCotizacion.class
 com\retail\cotizador\equipos\dto\EquipoDto$EquipoDtoBuilder.class
+com\retail\cotizador\auth\security\UserPrincipal$UserPrincipalBuilder.class
 com\retail\cotizador\clientes\repository\ClienteRepository.class
 com\retail\cotizador\clientes\dto\ClienteDto.class
+com\retail\cotizador\auth\security\SecurityConfig.class

@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ClienteRepository clienteRepository;
     private final UsuarioRepository usuarioRepository;
     private final EquipoRepository equipoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
@@ -75,27 +78,129 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void inicializarUsuarios() {
-        if (usuarioRepository.count() == 0) {
-            log.info("Cargando usuarios y emisores iniciales...");
-            usuarioRepository.saveAll(List.of(
-                    Usuario.builder()
-                            .username("VENTASSR001")
-                            .nombreCompleto("Ejecutivo Ventas Retail SV")
-                            .cargo("Ejecutivo de Ventas")
-                            .correo("ventas.sv@retail.com.gt")
-                            .rol("ROLE_VENTAS")
-                            .activo(true)
-                            .build(),
-                    Usuario.builder()
-                            .username("ERAMIREZ")
-                            .nombreCompleto("Ing. Erick Ramírez")
-                            .cargo("Gerente General")
-                            .correo("erick.ramirez@retail.com.gt")
-                            .rol("ROLE_ADMIN")
-                            .activo(true)
-                            .build()
-            ));
-        }
+        log.info("Verificando y asegurando credenciales y sucursales de usuarios...");
+
+        // 1. Asegurar Admin Matriz (ERAMIREZ)
+        usuarioRepository.findByUsername("ERAMIREZ").ifPresentOrElse(u -> {
+            boolean mod = false;
+            if (u.getPassword() == null || !u.getPassword().startsWith("$2a$")) {
+                u.setPassword(passwordEncoder.encode("admin123"));
+                mod = true;
+            }
+            if (u.getSucursalId() == null) {
+                u.setSucursalId(1L);
+                mod = true;
+            }
+            if (!"ROLE_ADMIN".equals(u.getRol())) {
+                u.setRol("ROLE_ADMIN");
+                mod = true;
+            }
+            if (mod) usuarioRepository.save(u);
+        }, () -> {
+            usuarioRepository.save(Usuario.builder()
+                    .username("ERAMIREZ")
+                    .password(passwordEncoder.encode("admin123"))
+                    .nombreCompleto("Ing. Erick Ramírez")
+                    .cargo("Gerente General")
+                    .correo("erick.ramirez@retail.com.gt")
+                    .rol("ROLE_ADMIN")
+                    .sucursalId(1L)
+                    .activo(true)
+                    .build());
+        });
+
+        // 2. Asegurar Gerente Sucursal 2 (CVALENCIA)
+        usuarioRepository.findByUsername("CVALENCIA").ifPresentOrElse(u -> {
+            boolean mod = false;
+            if (u.getPassword() == null || !u.getPassword().startsWith("$2a$")) {
+                u.setPassword(passwordEncoder.encode("gerente123"));
+                mod = true;
+            }
+            if (u.getSucursalId() == null) {
+                u.setSucursalId(2L);
+                mod = true;
+            }
+            if (!"ROLE_GERENTE".equals(u.getRol())) {
+                u.setRol("ROLE_GERENTE");
+                mod = true;
+            }
+            if (mod) usuarioRepository.save(u);
+        }, () -> {
+            usuarioRepository.save(Usuario.builder()
+                    .username("CVALENCIA")
+                    .password(passwordEncoder.encode("gerente123"))
+                    .nombreCompleto("Lic. Carlos Valencia")
+                    .cargo("Gerente de Sucursal")
+                    .correo("carlos.valencia@retail.com.sv")
+                    .rol("ROLE_GERENTE")
+                    .sucursalId(2L)
+                    .activo(true)
+                    .build());
+        });
+
+        // 3. Asegurar Ejecutivo Ventas Matriz (VENTASSR001)
+        usuarioRepository.findByUsername("VENTASSR001").ifPresentOrElse(u -> {
+            boolean mod = false;
+            if (u.getPassword() == null || !u.getPassword().startsWith("$2a$")) {
+                u.setPassword(passwordEncoder.encode("ventas123"));
+                mod = true;
+            }
+            if (u.getSucursalId() == null) {
+                u.setSucursalId(1L);
+                mod = true;
+            }
+            if (mod) usuarioRepository.save(u);
+        }, () -> {
+            usuarioRepository.save(Usuario.builder()
+                    .username("VENTASSR001")
+                    .password(passwordEncoder.encode("ventas123"))
+                    .nombreCompleto("Ejecutivo Ventas Retail SV")
+                    .cargo("Ejecutivo de Ventas")
+                    .correo("ventas.sv@retail.com.gt")
+                    .rol("ROLE_VENTAS")
+                    .sucursalId(1L)
+                    .activo(true)
+                    .build());
+        });
+
+        // 4. Asegurar Ejecutivo Ventas Sucursal 2 (VENTASOCC01)
+        usuarioRepository.findByUsername("VENTASOCC01").ifPresentOrElse(u -> {
+            boolean mod = false;
+            if (u.getPassword() == null || !u.getPassword().startsWith("$2a$")) {
+                u.setPassword(passwordEncoder.encode("ventas123"));
+                mod = true;
+            }
+            if (u.getSucursalId() == null) {
+                u.setSucursalId(2L);
+                mod = true;
+            }
+            if (mod) usuarioRepository.save(u);
+        }, () -> {
+            usuarioRepository.save(Usuario.builder()
+                    .username("VENTASOCC01")
+                    .password(passwordEncoder.encode("ventas123"))
+                    .nombreCompleto("Ejecutivo Ventas Occidente")
+                    .cargo("Ejecutivo de Ventas")
+                    .correo("ventas.occidente@retail.com.sv")
+                    .rol("ROLE_VENTAS")
+                    .sucursalId(2L)
+                    .activo(true)
+                    .build());
+        });
+
+        // 5. Asegurar cualquier otro usuario existente
+        usuarioRepository.findAll().forEach(u -> {
+            boolean mod = false;
+            if (u.getPassword() == null || !u.getPassword().startsWith("$2a$")) {
+                u.setPassword(passwordEncoder.encode("123456"));
+                mod = true;
+            }
+            if (u.getSucursalId() == null) {
+                u.setSucursalId(1L);
+                mod = true;
+            }
+            if (mod) usuarioRepository.save(u);
+        });
     }
 
     private void inicializarClientes() {

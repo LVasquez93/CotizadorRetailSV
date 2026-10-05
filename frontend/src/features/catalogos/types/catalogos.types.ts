@@ -13,10 +13,12 @@ export interface Cliente {
 export interface Usuario {
   id: number;
   username: string;
+  password?: string;
   nombreCompleto: string;
   correo?: string;
   cargo?: string;
   rol: string;
+  sucursalId?: number;
   activo?: boolean;
 }
 

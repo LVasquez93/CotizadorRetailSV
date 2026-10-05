@@ -77,6 +77,25 @@ public class ClienteService {
         return mapToDto(clienteRepository.save(cliente));
     }
 
+    @Transactional
+    public List<ClienteDto> crearLote(List<ClienteDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
+        }
+        return dtos.stream()
+                .filter(d -> d.getRazonSocial() != null && !d.getRazonSocial().trim().isEmpty())
+                .map(this::crear)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente", "id", id));
+        cliente.setActivo(false);
+        clienteRepository.save(cliente);
+    }
+
     private ClienteDto mapToDto(Cliente entity) {
         return ClienteDto.builder()
                 .id(entity.getId())

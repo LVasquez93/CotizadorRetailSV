@@ -18,6 +18,9 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+    @Column(length = 120)
+    private String password;
+
     @Column(nullable = false, length = 150)
     private String nombreCompleto;
 
@@ -30,6 +33,9 @@ public class Usuario {
     @Column(nullable = false, length = 50)
     @Builder.Default
     private String rol = "ROLE_VENTAS";
+
+    @Column(name = "sucursal_id")
+    private Long sucursalId;
 
     @Column(nullable = false)
     @Builder.Default

@@ -1,3 +1,11 @@
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\auth\controller\AuthController.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\auth\dto\AuthResponseDto.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\auth\dto\LoginRequestDto.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\auth\filter\JwtAuthenticationFilter.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\auth\security\SecurityConfig.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\auth\security\UserDetailsServiceImpl.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\auth\security\UserPrincipal.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\auth\service\JwtService.java
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\clientes\controller\ClienteController.java
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\clientes\dto\ClienteDto.java
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\clientes\entity\Cliente.java

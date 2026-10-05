@@ -112,6 +112,25 @@ public class EquipoService {
         return mapToDto(equipoRepository.save(equipo));
     }
 
+    @Transactional
+    public List<EquipoDto> crearLote(List<EquipoDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
+        }
+        return dtos.stream()
+                .filter(d -> d.getDescripcion() != null && !d.getDescripcion().trim().isEmpty())
+                .map(this::crearOActualizar)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+        Equipo equipo = equipoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Equipo", "id", id));
+        equipo.setActivo(false);
+        equipoRepository.save(equipo);
+    }
+
     private EquipoDto mapToDto(Equipo entity) {
         return EquipoDto.builder()
                 .id(entity.getId())

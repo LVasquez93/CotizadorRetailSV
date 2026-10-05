@@ -39,4 +39,15 @@ public class ClienteController {
     public ResponseEntity<ClienteDto> actualizar(@PathVariable Long id, @Valid @RequestBody ClienteDto dto) {
         return ResponseEntity.ok(clienteService.actualizar(id, dto));
     }
+
+    @PostMapping("/lote")
+    public ResponseEntity<List<ClienteDto>> crearLote(@RequestBody List<ClienteDto> dtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.crearLote(dtos));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        clienteService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

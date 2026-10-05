@@ -1,5 +1,6 @@
 package com.retail.cotizador.usuarios.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -14,12 +15,16 @@ public class UsuarioDto {
     @NotBlank(message = "El código de usuario es obligatorio")
     private String username;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+
     @NotBlank(message = "El nombre completo es obligatorio")
     private String nombreCompleto;
 
     private String correo;
     private String cargo;
     private String rol;
+    private Long sucursalId;
     private Boolean activo;
     private LocalDateTime fechaCreacion;
 }

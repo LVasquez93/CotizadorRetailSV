@@ -37,4 +37,15 @@ public class UsuarioController {
     public ResponseEntity<UsuarioDto> actualizar(@PathVariable Long id, @Valid @RequestBody UsuarioDto dto) {
         return ResponseEntity.ok(usuarioService.actualizar(id, dto));
     }
+
+    @PostMapping("/lote")
+    public ResponseEntity<List<UsuarioDto>> crearLote(@RequestBody List<UsuarioDto> dtos) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.crearLote(dtos));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        usuarioService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }
