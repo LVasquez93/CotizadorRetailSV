@@ -4,6 +4,8 @@ import com.retail.cotizador.clientes.entity.Cliente;
 import com.retail.cotizador.clientes.repository.ClienteRepository;
 import com.retail.cotizador.equipos.entity.Equipo;
 import com.retail.cotizador.equipos.repository.EquipoRepository;
+import com.retail.cotizador.sucursales.entity.Sucursal;
+import com.retail.cotizador.sucursales.repository.SucursalRepository;
 import com.retail.cotizador.usuarios.entity.Usuario;
 import com.retail.cotizador.usuarios.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,15 +21,57 @@ import java.util.List;
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
 
+    private final SucursalRepository sucursalRepository;
     private final ClienteRepository clienteRepository;
     private final UsuarioRepository usuarioRepository;
     private final EquipoRepository equipoRepository;
 
     @Override
     public void run(String... args) {
+        inicializarSucursales();
         inicializarUsuarios();
         inicializarClientes();
         inicializarEquipos();
+        asegurarSucursalEnRegistrosExistentes();
+    }
+
+    private void inicializarSucursales() {
+        if (sucursalRepository.count() == 0) {
+            log.info("Cargando sucursales iniciales...");
+            Sucursal sucursal1 = Sucursal.builder()
+                    .codigo("SUC_SV")
+                    .nombre("Retail El Salvador (Matriz)")
+                    .razonSocial("RETAIL SERVICES EL SALVADOR S.A. DE C.V.")
+                    .nombreComercial("RETAIL EL SALVADOR")
+                    .direccion("Calle Los Bambúes, Col. San Benito, San Salvador")
+                    .telefono("2250-7700")
+                    .correo("contacto.sv@retail.com.sv")
+                    .prefijoCotizacion("COT")
+                    .nombreFirmante("ING. ERICK RAMIREZ")
+                    .cargoFirmante("GERENTE GENERAL")
+                    .formaPagoPredeterminada("Crédito 30 días, Transferencia Bancaria o Cheque")
+                    .notaPredeterminada("** IMPORTANTE ** Tiempos de entrega y precios, podrían estar sujetos a cambios en inventario")
+                    .activo(true)
+                    .build();
+
+            Sucursal sucursal2 = Sucursal.builder()
+                    .codigo("SUC_02")
+                    .nombre("Retail Sucursal 2 (Occidente)")
+                    .razonSocial("RETAIL SERVICES DE OCCIDENTE S.A. DE C.V.")
+                    .nombreComercial("RETAIL OCCIDENTE")
+                    .direccion("Av. Independencia Sur #45, Santa Ana")
+                    .telefono("2440-1100")
+                    .correo("ventas.occidente@retail.com.sv")
+                    .prefijoCotizacion("COT2")
+                    .nombreFirmante("LIC. CARLOS VALENCIA")
+                    .cargoFirmante("GERENTE DE SUCURSAL")
+                    .formaPagoPredeterminada("Contado contra entrega / Transferencia Bancaria")
+                    .notaPredeterminada("** IMPORTANTE ** Precios sujetos a confirmación de stock local en Santa Ana")
+                    .activo(true)
+                    .build();
+
+            sucursalRepository.saveAll(List.of(sucursal1, sucursal2));
+        }
     }
 
     private void inicializarUsuarios() {
@@ -55,8 +99,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void inicializarClientes() {
-        if (clienteRepository.count() == 0) {
-            log.info("Cargando clientes iniciales...");
+        boolean sucursal1TieneClientes = clienteRepository.findAll().stream()
+                .anyMatch(c -> Long.valueOf(1L).equals(c.getSucursalId()));
+        if (!sucursal1TieneClientes) {
+            log.info("Cargando clientes iniciales para Sucursal 1 (Matriz)...");
             clienteRepository.saveAll(List.of(
                     Cliente.builder()
                             .razonSocial("ALIMENTOS Y TURISMO SA DE CV")
@@ -65,6 +111,7 @@ public class DataInitializer implements CommandLineRunner {
                             .telefono("2263-0000")
                             .correo("compras@premiumrestaurants.com")
                             .direccion("San Salvador, El Salvador")
+                            .sucursalId(1L)
                             .activo(true)
                             .build(),
                     Cliente.builder()
@@ -74,6 +121,7 @@ public class DataInitializer implements CommandLineRunner {
                             .telefono("2288-5500")
                             .correo("adquisiciones@selectos.com.sv")
                             .direccion("Antiguo Cuscatlán, La Libertad")
+                            .sucursalId(1L)
                             .activo(true)
                             .build(),
                     Cliente.builder()
@@ -83,6 +131,45 @@ public class DataInitializer implements CommandLineRunner {
                             .telefono("2244-1122")
                             .correo("compras@farmaciaseconomicas.com.sv")
                             .direccion("San Salvador, El Salvador")
+                            .sucursalId(1L)
+                            .activo(true)
+                            .build()
+            ));
+        }
+
+        boolean sucursal2TieneClientes = clienteRepository.findAll().stream()
+                .anyMatch(c -> Long.valueOf(2L).equals(c.getSucursalId()));
+        if (!sucursal2TieneClientes) {
+            log.info("Cargando clientes iniciales para Sucursal 2 (Occidente)...");
+            clienteRepository.saveAll(List.of(
+                    Cliente.builder()
+                            .razonSocial("AGROINDUSTRIAS DE OCCIDENTE SA DE CV")
+                            .nombreComercial("AGRO OCCIDENTE")
+                            .contactoPrincipal("Ing. Roberto Salguero")
+                            .telefono("2447-8899")
+                            .correo("compras@agrooccidente.com.sv")
+                            .direccion("Santa Ana, El Salvador")
+                            .sucursalId(2L)
+                            .activo(true)
+                            .build(),
+                    Cliente.builder()
+                            .razonSocial("BENEFICIO EL MOLINO SA DE CV")
+                            .nombreComercial("CAFES DE SANTA ANA")
+                            .contactoPrincipal("Licda. Claudia Méndez")
+                            .telefono("2440-5522")
+                            .correo("adquisiciones@elmolino.com.sv")
+                            .direccion("Carretera a Metapán Km 66, Santa Ana")
+                            .sucursalId(2L)
+                            .activo(true)
+                            .build(),
+                    Cliente.builder()
+                            .razonSocial("HOTEL Y RESTAURANTE CASABLANCA SA DE CV")
+                            .nombreComercial("HOTEL CASABLANCA OCCIDENTE")
+                            .contactoPrincipal("Arq. Fernando Castaneda")
+                            .telefono("2441-9900")
+                            .correo("gerencia@hotelcasablanca.sv")
+                            .direccion("Boulevard Los 44, Santa Ana")
+                            .sucursalId(2L)
                             .activo(true)
                             .build()
             ));
@@ -90,8 +177,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void inicializarEquipos() {
-        if (equipoRepository.count() == 0) {
-            log.info("Cargando catálogo maestro inicial de equipos...");
+        boolean sucursal1TieneEquipos = equipoRepository.findAll().stream()
+                .anyMatch(e -> Long.valueOf(1L).equals(e.getSucursalId()));
+        if (!sucursal1TieneEquipos) {
+            log.info("Cargando catálogo maestro inicial de equipos para Sucursal 1 (Matriz)...");
             equipoRepository.saveAll(List.of(
                     Equipo.builder()
                             .descripcion("IMPRESORA DE TARJETAS ZEBRA ZC300 DUAL")
@@ -100,6 +189,7 @@ public class DataInitializer implements CommandLineRunner {
                             .precioReferencial(new BigDecimal("1250.00"))
                             .tiempoEntregaPredeterminado("De 5 a 6 semanas")
                             .categoria("Impresoras de Tarjetas")
+                            .sucursalId(1L)
                             .activo(true)
                             .build(),
                     Equipo.builder()
@@ -109,6 +199,7 @@ public class DataInitializer implements CommandLineRunner {
                             .precioReferencial(new BigDecimal("1650.00"))
                             .tiempoEntregaPredeterminado("De 4 a 5 semanas")
                             .categoria("Impresoras Térmicas")
+                            .sucursalId(1L)
                             .activo(true)
                             .build(),
                     Equipo.builder()
@@ -118,6 +209,7 @@ public class DataInitializer implements CommandLineRunner {
                             .precioReferencial(new BigDecimal("890.00"))
                             .tiempoEntregaPredeterminado("De 3 a 4 semanas")
                             .categoria("Terminales POS")
+                            .sucursalId(1L)
                             .activo(true)
                             .build(),
                     Equipo.builder()
@@ -127,6 +219,7 @@ public class DataInitializer implements CommandLineRunner {
                             .precioReferencial(new BigDecimal("185.00"))
                             .tiempoEntregaPredeterminado("Stock Inmediato")
                             .categoria("Lectores de Código de Barras")
+                            .sucursalId(1L)
                             .activo(true)
                             .build(),
                     Equipo.builder()
@@ -136,9 +229,63 @@ public class DataInitializer implements CommandLineRunner {
                             .precioReferencial(new BigDecimal("750.00"))
                             .tiempoEntregaPredeterminado("De 4 a 6 semanas")
                             .categoria("Computadoras Móviles")
+                            .sucursalId(1L)
                             .activo(true)
                             .build()
             ));
         }
+
+        boolean sucursal2TieneEquipos = equipoRepository.findAll().stream()
+                .anyMatch(e -> Long.valueOf(2L).equals(e.getSucursalId()));
+        if (!sucursal2TieneEquipos) {
+            log.info("Cargando catálogo maestro inicial de equipos para Sucursal 2 (Occidente)...");
+            equipoRepository.saveAll(List.of(
+                    Equipo.builder()
+                            .descripcion("IMPRESORA FISCAL EPSON TM-T88VI DUAL OCCIDENTE")
+                            .partNumber("C31CE94061")
+                            .caracteristicas("• Impresión térmica de recibos de alta velocidad (350 mm/s)\n• Conexión simultánea USB, Ethernet y Serial\n• Corte automático de papel")
+                            .precioReferencial(new BigDecimal("340.00"))
+                            .tiempoEntregaPredeterminado("Stock Local Inmediato")
+                            .categoria("Impresoras Térmicas")
+                            .sucursalId(2L)
+                            .activo(true)
+                            .build(),
+                    Equipo.builder()
+                            .descripcion("LECTOR CODIGO DE BARRAS ZEBRA DS2208 OCCIDENTE")
+                            .partNumber("DS2208-SR7U2100AZW")
+                            .caracteristicas("• Escáner de mano 1D/2D con cable USB\n• Rango de lectura omnidireccional\n• Tolerancia a caídas de 1.5 m sobre concreto")
+                            .precioReferencial(new BigDecimal("145.00"))
+                            .tiempoEntregaPredeterminado("Stock Inmediato Santa Ana")
+                            .categoria("Lectores de Código de Barras")
+                            .sucursalId(2L)
+                            .activo(true)
+                            .build(),
+                    Equipo.builder()
+                            .descripcion("TERMINAL POS TACTIL TOUCH DYNAPOS 15 PULGADAS")
+                            .partNumber("DYNA-POS-15-J19")
+                            .caracteristicas("• Pantalla táctil capacitiva 15.6 pulgadas\n• Procesador Intel Celeron J1900\n• 4GB RAM DDR3L / 128GB SSD")
+                            .precioReferencial(new BigDecimal("780.00"))
+                            .tiempoEntregaPredeterminado("De 2 a 3 semanas")
+                            .categoria("Terminales POS")
+                            .sucursalId(2L)
+                            .activo(true)
+                            .build()
+            ));
+        }
+    }
+
+    private void asegurarSucursalEnRegistrosExistentes() {
+        clienteRepository.findAll().forEach(c -> {
+            if (c.getSucursalId() == null) {
+                c.setSucursalId(1L);
+                clienteRepository.save(c);
+            }
+        });
+        equipoRepository.findAll().forEach(e -> {
+            if (e.getSucursalId() == null) {
+                e.setSucursalId(1L);
+                equipoRepository.save(e);
+            }
+        });
     }
 }

@@ -7,6 +7,7 @@ import { numeroALetras } from '../utils/numeroALetras';
 import { cotizacionesApi } from '../../../api/cotizacionesApi';
 import { clientesApi, usuariosApi, equiposApi } from '../../../api/catalogosApi';
 import { Cliente, Usuario, Equipo } from '../../catalogos/types/catalogos.types';
+import { useSucursal } from '../../../context/SucursalContext';
 
 const DEFAULT_FORM_VALUES: CotizacionFormData = {
   codigoCotizacion: '',
@@ -37,6 +38,7 @@ const DEFAULT_FORM_VALUES: CotizacionFormData = {
 
 export const CotizacionForm = () => {
   const navigate = useNavigate();
+  const { sucursalActiva } = useSucursal();
   const [loading, setLoading] = useState(false);
 
   // Estados para integración con Base de Datos (Clientes, Usuarios, Equipos)
@@ -64,9 +66,10 @@ export const CotizacionForm = () => {
     name: 'items'
   });
 
-  // Carga inicial de datos maestros desde MySQL
+  // Carga inicial y reactiva de datos maestros según la sucursal activa seleccionada
   useEffect(() => {
-    clientesApi.listarOBuscar().then(data => {
+    const sucursalId = sucursalActiva?.id;
+    clientesApi.listarOBuscar(undefined, sucursalId).then(data => {
       setClientes(data);
       setClientesSugeridos(data);
     }).catch(console.error);
@@ -75,10 +78,20 @@ export const CotizacionForm = () => {
       setUsuarios(data);
     }).catch(console.error);
 
-    equiposApi.listarOBuscar().then(data => {
+    equiposApi.listarOBuscar(undefined, sucursalId).then(data => {
       setEquiposCatalogo(data);
     }).catch(console.error);
-  }, []);
+
+    // Ajustar condiciones comerciales y notas por defecto según la sucursal activa
+    if (sucursalActiva) {
+      if (sucursalActiva.formaPagoPredeterminada) {
+        setValue('formaPago', sucursalActiva.formaPagoPredeterminada);
+      }
+      if (sucursalActiva.notaPredeterminada) {
+        setValue('notaImportante', sucursalActiva.notaPredeterminada);
+      }
+    }
+  }, [sucursalActiva, setValue]);
 
   // useWatch escucha en tiempo real cada pulsación en cualquier campo de items
   const watchedItems = useWatch({
@@ -220,6 +233,7 @@ export const CotizacionForm = () => {
 
     return {
       ...formData,
+      sucursalId: sucursalActiva?.id,
       codigoCotizacion: '',
       items: itemsCalculados,
       subtotalSinIva: totales.subtotalSinIva,
@@ -321,7 +335,7 @@ export const CotizacionForm = () => {
     setMostrarModalEquiposNuevos(false);
     setLoading(true);
     try {
-      // Guardar los equipos nuevos en la base de datos
+      // Guardar los equipos nuevos en la base de datos vinculados a la sucursal activa
       for (const itemNuevo of equiposNuevosDetectados) {
         await equiposApi.crearOActualizar({
           descripcion: itemNuevo.descripcionEquipo.trim(),
@@ -329,11 +343,12 @@ export const CotizacionForm = () => {
           caracteristicas: itemNuevo.caracteristicas?.trim() || undefined,
           precioReferencial: Number(itemNuevo.precioUnitario || 0),
           tiempoEntregaPredeterminado: itemNuevo.tiempoEntrega?.trim() || 'De 5 a 6 semanas',
+          sucursalId: sucursalActiva?.id,
           categoria: 'General'
         });
       }
-      // Actualizar catálogo local de equipos
-      const actualizados = await equiposApi.listarOBuscar();
+      // Actualizar catálogo local de equipos de la sucursal
+      const actualizados = await equiposApi.listarOBuscar(undefined, sucursalActiva?.id);
       setEquiposCatalogo(actualizados);
     } catch (err) {
       console.error('Error guardando equipos nuevos en el catálogo:', err);
@@ -357,6 +372,28 @@ export const CotizacionForm = () => {
 
   return (
     <div className="max-w-7xl mx-auto pb-12 px-2 sm:px-4">
+      {/* Indicador de Sucursal Activa */}
+      {sucursalActiva && (
+        <div className="mb-4 bg-white rounded-xl shadow-sm border-l-4 border-[#1F3D3D] p-3 sm:p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">🏢</span>
+            <div>
+              <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                Cotizando para la Sucursal
+              </div>
+              <div className="text-sm sm:text-base font-bold text-[#1F3D3D]">
+                {sucursalActiva.nombre}
+                <span className="ml-2 text-xs font-normal text-gray-500 hidden sm:inline">
+                  ({sucursalActiva.razonSocial})
+                </span>
+              </div>
+            </div>
+          </div>
+          <span className="bg-teal-50 text-teal-800 text-xs font-mono font-bold px-2.5 py-1 rounded-md border border-teal-200">
+            Prefijo: {sucursalActiva.prefijoCotizacion}
+          </span>
+        </div>
+      )}
 
       <form
         autoComplete="off"
@@ -384,11 +421,13 @@ export const CotizacionForm = () => {
               <div className="relative">
                 <div className="flex justify-between items-center">
                   <label className="block text-sm font-medium text-gray-700">Razón Social *</label>
-                  {clientes.length > 0 && (
-                    <span className="text-[11px] text-emerald-700 font-medium bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                      BD ({clientes.length})
-                    </span>
-                  )}
+                  <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded border transition-colors ${
+                    clientes.length > 0 
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
+                      : 'text-amber-700 bg-amber-50 border-amber-200'
+                  }`}>
+                    BD ({clientes.length})
+                  </span>
                 </div>
                 <input
                   {...register('razonSocialCliente', { required: true })}
@@ -505,7 +544,16 @@ export const CotizacionForm = () => {
           <div className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
               <div>
-                <h2 className="text-xl font-bold text-gray-800">Detalle de Equipos</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-800">Detalle de Equipos</h2>
+                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded border transition-colors ${
+                    equiposCatalogo.length > 0
+                      ? 'text-blue-700 bg-blue-50 border-blue-200'
+                      : 'text-amber-700 bg-amber-50 border-amber-200'
+                  }`}>
+                    Catálogo BD ({equiposCatalogo.length})
+                  </span>
+                </div>
                 <p className="text-xs text-gray-500 mt-0.5">Ingrese los equipos, especificaciones técnicas y precios</p>
               </div>
               <button

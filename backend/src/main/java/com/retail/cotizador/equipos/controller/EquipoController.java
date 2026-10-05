@@ -18,8 +18,10 @@ public class EquipoController {
     private final EquipoService equipoService;
 
     @GetMapping
-    public ResponseEntity<List<EquipoDto>> listarOBuscar(@RequestParam(required = false) String q) {
-        return ResponseEntity.ok(equipoService.listarOBuscar(q));
+    public ResponseEntity<List<EquipoDto>> listarOBuscar(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Long sucursalId) {
+        return ResponseEntity.ok(equipoService.listarOBuscar(q, sucursalId));
     }
 
     @GetMapping("/{id}")

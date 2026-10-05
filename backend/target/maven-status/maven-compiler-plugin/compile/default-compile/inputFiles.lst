@@ -24,6 +24,11 @@ C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\c
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\equipos\entity\Equipo.java
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\equipos\repository\EquipoRepository.java
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\equipos\service\EquipoService.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\sucursales\controller\SucursalController.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\sucursales\dto\SucursalDto.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\sucursales\entity\Sucursal.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\sucursales\repository\SucursalRepository.java
+C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\sucursales\service\SucursalService.java
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\usuarios\controller\UsuarioController.java
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\usuarios\dto\UsuarioDto.java
 C:\Users\luizi\OneDrive\Escritorio\Desarrollo\backend\src\main\java\com\retail\cotizador\usuarios\entity\Usuario.java

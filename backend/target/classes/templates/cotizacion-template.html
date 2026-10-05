@@ -319,9 +319,9 @@
         <table class="signature-table">
             <tr>
                 <td>
-                    <img th:src="${signatureBase64}" class="signature-img" alt="Firma Erick Ramirez"/><br/>
-                    <div class="signature-name">ING. ERICK RAMIREZ</div>
-                    <div class="signature-title">GERENTE GENERAL</div>
+                    <img th:src="${signatureBase64}" class="signature-img" alt="Firma Autorizada"/><br/>
+                    <div class="signature-name" th:text="${nombreFirmante != null ? nombreFirmante : 'ING. ERICK RAMIREZ'}">ING. ERICK RAMIREZ</div>
+                    <div class="signature-title" th:text="${cargoFirmante != null ? cargoFirmante : 'GERENTE GENERAL'}">GERENTE GENERAL</div>
                 </td>
             </tr>
         </table>

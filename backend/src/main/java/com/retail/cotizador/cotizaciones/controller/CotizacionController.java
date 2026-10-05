@@ -34,8 +34,10 @@ public class CotizacionController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponseDto<CotizacionResponseDto>> listar(Pageable pageable) {
-        Page<CotizacionResponseDto> page = cotizacionService.listarCotizaciones(pageable);
+    public ResponseEntity<PageResponseDto<CotizacionResponseDto>> listar(
+            @RequestParam(required = false) Long sucursalId,
+            Pageable pageable) {
+        Page<CotizacionResponseDto> page = cotizacionService.listarCotizaciones(pageable, sucursalId);
         return ResponseEntity.ok(PageResponseDto.from(page));
     }
 

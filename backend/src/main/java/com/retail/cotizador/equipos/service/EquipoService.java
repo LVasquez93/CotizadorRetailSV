@@ -20,11 +20,16 @@ public class EquipoService {
 
     @Transactional(readOnly = true)
     public List<EquipoDto> listarOBuscar(String query) {
+        return listarOBuscar(query, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EquipoDto> listarOBuscar(String query, Long sucursalId) {
         List<Equipo> list;
         if (query != null && !query.trim().isEmpty()) {
-            list = equipoRepository.buscarEquipos(query.trim());
+            list = equipoRepository.buscarEquipos(query.trim(), sucursalId);
         } else {
-            list = equipoRepository.findByActivoTrueOrderByDescripcionAsc();
+            list = equipoRepository.listarPorSucursal(sucursalId);
         }
         return list.stream().map(this::mapToDto).collect(Collectors.toList());
     }
@@ -66,6 +71,9 @@ public class EquipoService {
             if (dto.getCategoria() != null) {
                 equipo.setCategoria(dto.getCategoria().trim());
             }
+            if (dto.getSucursalId() != null) {
+                equipo.setSucursalId(dto.getSucursalId());
+            }
             equipo.setActivo(true);
         } else {
             equipo = Equipo.builder()
@@ -75,6 +83,7 @@ public class EquipoService {
                     .precioReferencial(dto.getPrecioReferencial())
                     .tiempoEntregaPredeterminado(dto.getTiempoEntregaPredeterminado() != null ? dto.getTiempoEntregaPredeterminado().trim() : "De 5 a 6 semanas")
                     .categoria(dto.getCategoria() != null ? dto.getCategoria().trim() : "General")
+                    .sucursalId(dto.getSucursalId())
                     .activo(dto.getActivo() != null ? dto.getActivo() : true)
                     .build();
         }
@@ -93,6 +102,9 @@ public class EquipoService {
         equipo.setPrecioReferencial(dto.getPrecioReferencial());
         equipo.setTiempoEntregaPredeterminado(dto.getTiempoEntregaPredeterminado());
         equipo.setCategoria(dto.getCategoria());
+        if (dto.getSucursalId() != null) {
+            equipo.setSucursalId(dto.getSucursalId());
+        }
         if (dto.getActivo() != null) {
             equipo.setActivo(dto.getActivo());
         }
@@ -109,6 +121,7 @@ public class EquipoService {
                 .precioReferencial(entity.getPrecioReferencial())
                 .tiempoEntregaPredeterminado(entity.getTiempoEntregaPredeterminado())
                 .categoria(entity.getCategoria())
+                .sucursalId(entity.getSucursalId())
                 .activo(entity.getActivo())
                 .fechaCreacion(entity.getFechaCreacion())
                 .build();

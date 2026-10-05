@@ -6,6 +6,7 @@ export interface Cliente {
   telefono?: string;
   correo?: string;
   direccion?: string;
+  sucursalId?: number;
   activo?: boolean;
 }
 
@@ -27,5 +28,26 @@ export interface Equipo {
   precioReferencial?: number;
   tiempoEntregaPredeterminado?: string;
   categoria?: string;
+  sucursalId?: number;
   activo?: boolean;
+}
+
+export interface Sucursal {
+  id: number;
+  codigo: string;
+  nombre: string;
+  razonSocial: string;
+  nombreComercial?: string;
+  direccion?: string;
+  telefono?: string;
+  correo?: string;
+  prefijoCotizacion: string;
+  headerBannerBase64?: string;
+  footerBannerBase64?: string;
+  firmaBase64?: string;
+  nombreFirmante?: string;
+  cargoFirmante?: string;
+  formaPagoPredeterminada?: string;
+  notaPredeterminada?: string;
+  activo: boolean;
 }

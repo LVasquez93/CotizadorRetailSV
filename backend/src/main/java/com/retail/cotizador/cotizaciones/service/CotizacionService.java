@@ -8,6 +8,8 @@ import com.retail.cotizador.cotizaciones.dto.ItemDto;
 import com.retail.cotizador.cotizaciones.entity.Cotizacion;
 import com.retail.cotizador.cotizaciones.entity.ItemCotizacion;
 import com.retail.cotizador.cotizaciones.repository.CotizacionRepository;
+import com.retail.cotizador.sucursales.entity.Sucursal;
+import com.retail.cotizador.sucursales.repository.SucursalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,13 +27,22 @@ import java.math.BigDecimal;
 public class CotizacionService {
 
     private final CotizacionRepository cotizacionRepository;
+    private final SucursalRepository sucursalRepository;
 
     @Transactional
     public CotizacionResponseDto crearCotizacion(CotizacionRequestDto dto) {
         Cotizacion cotizacion = mapearEntidadTemporal(dto);
 
-        // Siempre generamos el código oficial correlativo con formato: COT + AAAA + MM + 3 dígitos
-        cotizacion.setCodigoCotizacion(generarCodigoCotizacion(cotizacion.getFechaEmision()));
+        // Identificar prefijo según sucursal
+        String prefijo = "COT";
+        if (cotizacion.getSucursalId() != null) {
+            prefijo = sucursalRepository.findById(cotizacion.getSucursalId())
+                    .map(Sucursal::getPrefijoCotizacion)
+                    .orElse("COT");
+        }
+
+        // Siempre generamos el código oficial correlativo con formato: Prefijo + AAAA + MM + 3 dígitos
+        cotizacion.setCodigoCotizacion(generarCodigoCotizacion(cotizacion.getFechaEmision(), prefijo));
         
         cotizacion.setTotalEnLetras(NumeroALetrasUtil.convertir(cotizacion.getTotalInversion()));
 
@@ -41,6 +52,14 @@ public class CotizacionService {
 
     @Transactional(readOnly = true)
     public Page<CotizacionResponseDto> listarCotizaciones(Pageable pageable) {
+        return listarCotizaciones(pageable, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CotizacionResponseDto> listarCotizaciones(Pageable pageable, Long sucursalId) {
+        if (sucursalId != null) {
+            return cotizacionRepository.findAllBySucursalId(sucursalId, pageable).map(this::mapearADto);
+        }
         return cotizacionRepository.findAll(pageable).map(this::mapearADto);
     }
 
@@ -57,9 +76,18 @@ public class CotizacionService {
 
     public Cotizacion mapearEntidadTemporal(CotizacionRequestDto dto) {
         LocalDate fecha = dto.getFechaEmision() != null ? dto.getFechaEmision() : LocalDate.now();
+        Long sucursalId = dto.getSucursalId() != null ? dto.getSucursalId() : 1L;
+
+        String prefijo = "COT";
+        if (sucursalId != null) {
+            prefijo = sucursalRepository.findById(sucursalId)
+                    .map(Sucursal::getPrefijoCotizacion)
+                    .orElse("COT");
+        }
+
         String codigo = dto.getCodigoCotizacion();
         if (codigo == null || codigo.isBlank() || codigo.startsWith("#") || codigo.contains("PRE")) {
-            codigo = "COT" + fecha.format(DateTimeFormatter.ofPattern("yyyyMM")) + "--- (PREVIA)";
+            codigo = prefijo + fecha.format(DateTimeFormatter.ofPattern("yyyyMM")) + "--- (PREVIA)";
         }
 
         String contacto = (dto.getContactoCliente() != null && !dto.getContactoCliente().isBlank())
@@ -77,6 +105,7 @@ public class CotizacionService {
 
         Cotizacion cotizacion = Cotizacion.builder()
                 .codigoCotizacion(codigo)
+                .sucursalId(sucursalId)
                 .usuarioEmisor(usuario)
                 .fechaEmision(fecha)
                 .contactoCliente(contacto)
@@ -129,9 +158,10 @@ public class CotizacionService {
         return cotizacion;
     }
 
-    private String generarCodigoCotizacion(LocalDate fecha) {
+    private String generarCodigoCotizacion(LocalDate fecha, String prefijo) {
         LocalDate f = (fecha != null) ? fecha : LocalDate.now();
-        String prefix = "COT" + f.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        String prefix = (prefijo != null && !prefijo.isBlank() ? prefijo.trim() : "COT")
+                + f.format(DateTimeFormatter.ofPattern("yyyyMM"));
         long count = cotizacionRepository.countByCodigoCotizacionStartingWith(prefix);
         long nextSeq = count + 1;
         String code = prefix + String.format("%03d", nextSeq);
@@ -156,9 +186,18 @@ public class CotizacionService {
                 .build()
         ).collect(Collectors.toList());
 
+        String nombreSucursal = "Matriz";
+        if (cotizacion.getSucursalId() != null) {
+            nombreSucursal = sucursalRepository.findById(cotizacion.getSucursalId())
+                    .map(Sucursal::getNombre)
+                    .orElse("Sucursal #" + cotizacion.getSucursalId());
+        }
+
         return CotizacionResponseDto.builder()
                 .id(cotizacion.getId())
                 .codigoCotizacion(cotizacion.getCodigoCotizacion())
+                .sucursalId(cotizacion.getSucursalId())
+                .nombreSucursal(nombreSucursal)
                 .usuarioEmisor(cotizacion.getUsuarioEmisor())
                 .fechaEmision(cotizacion.getFechaEmision())
                 .contactoCliente(cotizacion.getContactoCliente())

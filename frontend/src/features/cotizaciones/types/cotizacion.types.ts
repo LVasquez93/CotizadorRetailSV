@@ -13,6 +13,7 @@ export interface ItemCotizacionInput {
 
 export interface CotizacionFormData {
   codigoCotizacion: string;
+  sucursalId?: number;
   usuarioEmisor: string;
   fechaEmision: string;
   contactoCliente: string;
@@ -29,5 +30,6 @@ export interface CotizacionFormData {
 
 export interface CotizacionResponse extends CotizacionFormData {
   id: number;
+  nombreSucursal?: string;
   fechaCreacion: string;
 }

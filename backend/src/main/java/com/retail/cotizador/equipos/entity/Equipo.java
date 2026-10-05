@@ -34,6 +34,9 @@ public class Equipo {
     @Column(length = 100)
     private String categoria;
 
+    @Column(name = "sucursal_id")
+    private Long sucursalId;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;

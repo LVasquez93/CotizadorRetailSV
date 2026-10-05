@@ -33,6 +33,9 @@ public class Cliente {
     @Column(length = 255)
     private String direccion;
 
+    @Column(name = "sucursal_id")
+    private Long sucursalId;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;

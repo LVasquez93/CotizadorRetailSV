@@ -22,6 +22,9 @@ public class Cotizacion {
     @Column(nullable = false, unique = true, length = 30)
     private String codigoCotizacion;
 
+    @Column(name = "sucursal_id")
+    private Long sucursalId;
+
     @Column(nullable = false, length = 50)
     private String usuarioEmisor;
 

@@ -18,8 +18,10 @@ public class ClienteController {
     private final ClienteService clienteService;
 
     @GetMapping
-    public ResponseEntity<List<ClienteDto>> listarOBuscar(@RequestParam(required = false) String q) {
-        return ResponseEntity.ok(clienteService.listarOBuscar(q));
+    public ResponseEntity<List<ClienteDto>> listarOBuscar(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Long sucursalId) {
+        return ResponseEntity.ok(clienteService.listarOBuscar(q, sucursalId));
     }
 
     @GetMapping("/{id}")

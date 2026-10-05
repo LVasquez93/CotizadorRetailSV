@@ -19,11 +19,16 @@ public class ClienteService {
 
     @Transactional(readOnly = true)
     public List<ClienteDto> listarOBuscar(String query) {
+        return listarOBuscar(query, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClienteDto> listarOBuscar(String query, Long sucursalId) {
         List<Cliente> list;
         if (query != null && !query.trim().isEmpty()) {
-            list = clienteRepository.buscarClientes(query.trim());
+            list = clienteRepository.buscarClientes(query.trim(), sucursalId);
         } else {
-            list = clienteRepository.findByActivoTrueOrderByRazonSocialAsc();
+            list = clienteRepository.listarPorSucursal(sucursalId);
         }
         return list.stream().map(this::mapToDto).collect(Collectors.toList());
     }
@@ -44,6 +49,7 @@ public class ClienteService {
                 .telefono(dto.getTelefono())
                 .correo(dto.getCorreo())
                 .direccion(dto.getDireccion())
+                .sucursalId(dto.getSucursalId())
                 .activo(dto.getActivo() != null ? dto.getActivo() : true)
                 .build();
 
@@ -61,6 +67,9 @@ public class ClienteService {
         cliente.setTelefono(dto.getTelefono());
         cliente.setCorreo(dto.getCorreo());
         cliente.setDireccion(dto.getDireccion());
+        if (dto.getSucursalId() != null) {
+            cliente.setSucursalId(dto.getSucursalId());
+        }
         if (dto.getActivo() != null) {
             cliente.setActivo(dto.getActivo());
         }
@@ -77,6 +86,7 @@ public class ClienteService {
                 .telefono(entity.getTelefono())
                 .correo(entity.getCorreo())
                 .direccion(entity.getDireccion())
+                .sucursalId(entity.getSucursalId())
                 .activo(entity.getActivo())
                 .fechaCreacion(entity.getFechaCreacion())
                 .build();

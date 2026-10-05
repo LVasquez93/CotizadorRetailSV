@@ -2,14 +2,17 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { cotizacionesApi } from '../../../api/cotizacionesApi';
 import { CotizacionResponse } from '../types/cotizacion.types';
+import { useSucursal } from '../../../context/SucursalContext';
 
 export const CotizacionesList = () => {
   const location = useLocation();
+  const { sucursales } = useSucursal();
   const [bannerMessage, setBannerMessage] = useState<string | null>(location.state?.mensaje || null);
   const [cotizaciones, setCotizaciones] = useState<CotizacionResponse[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [filtroSucursalId, setFiltroSucursalId] = useState<number | 'TODAS'>('TODAS');
 
   // Clear history state after reading so refreshing doesn't keep showing the message
   useEffect(() => {
@@ -18,10 +21,10 @@ export const CotizacionesList = () => {
     }
   }, [location.state]);
 
-  const fetchCotizaciones = async (pageNumber: number) => {
+  const fetchCotizaciones = async (pageNumber: number, sucursalId?: number) => {
     try {
       setLoading(true);
-      const data = await cotizacionesApi.listar(pageNumber, 10);
+      const data = await cotizacionesApi.listar(pageNumber, 10, sucursalId);
       setCotizaciones(data.content);
       setTotalPages(data.totalPages);
     } catch (error) {
@@ -32,8 +35,9 @@ export const CotizacionesList = () => {
   };
 
   useEffect(() => {
-    fetchCotizaciones(page);
-  }, [page]);
+    const sucursalId = filtroSucursalId === 'TODAS' ? undefined : filtroSucursalId;
+    fetchCotizaciones(page, sucursalId);
+  }, [page, filtroSucursalId]);
 
   const handleVerPdf = async (id: number) => {
     const newWindow = window.open('about:blank', '_blank');
@@ -53,8 +57,8 @@ export const CotizacionesList = () => {
     }
   };
 
-  if (loading && page === 0) {
-    return <div className="flex justify-center p-8">Cargando...</div>;
+  if (loading && page === 0 && cotizaciones.length === 0) {
+    return <div className="flex justify-center p-8">Cargando historial de cotizaciones...</div>;
   }
 
   return (
@@ -79,21 +83,44 @@ export const CotizacionesList = () => {
       )}
 
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-gray-200">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Historial de Cotizaciones</h2>
+        <div className="p-4 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Historial de Cotizaciones</h2>
+            <p className="text-xs sm:text-sm text-gray-500">Listado consolidado de cotizaciones emitidas por sucursal.</p>
+          </div>
+
+          {/* Filtro por Sucursal */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-500">Filtrar por:</span>
+            <select
+              value={filtroSucursalId}
+              onChange={(e) => {
+                const val = e.target.value === 'TODAS' ? 'TODAS' : Number(e.target.value);
+                setFiltroSucursalId(val);
+                setPage(0);
+              }}
+              className="bg-gray-50 border border-gray-300 text-gray-800 text-xs sm:text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#1F3D3D] focus:border-[#1F3D3D]"
+            >
+              <option value="TODAS">🏢 Todas las Sucursales</option>
+              {sucursales.map(s => (
+                <option key={s.id} value={s.id}>🏢 {s.nombre}</option>
+              ))}
+            </select>
+          </div>
         </div>
         
         {cotizaciones.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            No hay cotizaciones registradas.
+            No hay cotizaciones registradas para el filtro seleccionado.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[700px]">
+            <table className="w-full text-left border-collapse min-w-[750px]">
               <thead>
                 <tr className="bg-[#1F3D3D] text-white">
                   <th className="p-3 sm:p-4 font-semibold text-xs sm:text-sm">#</th>
                   <th className="p-3 sm:p-4 font-semibold text-xs sm:text-sm">Código</th>
+                  <th className="p-3 sm:p-4 font-semibold text-xs sm:text-sm">Sucursal</th>
                   <th className="p-3 sm:p-4 font-semibold text-xs sm:text-sm">Cliente</th>
                   <th className="p-3 sm:p-4 font-semibold text-xs sm:text-sm">Razón Social</th>
                   <th className="p-3 sm:p-4 font-semibold text-xs sm:text-sm">Fecha</th>
@@ -105,7 +132,12 @@ export const CotizacionesList = () => {
                 {cotizaciones.map((cot, index) => (
                   <tr key={cot.id} className="hover:bg-gray-50 transition-colors">
                     <td className="p-3 sm:p-4 text-xs sm:text-sm text-gray-900">{page * 10 + index + 1}</td>
-                    <td className="p-3 sm:p-4 text-xs sm:text-sm font-medium text-gray-900">{cot.codigoCotizacion}</td>
+                    <td className="p-3 sm:p-4 text-xs sm:text-sm font-semibold text-blue-700">{cot.codigoCotizacion}</td>
+                    <td className="p-3 sm:p-4 text-xs sm:text-sm">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200">
+                        {cot.nombreSucursal || 'Matriz'}
+                      </span>
+                    </td>
                     <td className="p-3 sm:p-4 text-xs sm:text-sm text-gray-600">{cot.contactoCliente}</td>
                     <td className="p-3 sm:p-4 text-xs sm:text-sm text-gray-600">{cot.razonSocialCliente}</td>
                     <td className="p-3 sm:p-4 text-xs sm:text-sm text-gray-600">{new Date(cot.fechaCreacion).toLocaleDateString()}</td>
@@ -113,7 +145,7 @@ export const CotizacionesList = () => {
                     <td className="p-4 text-center">
                       <button
                         onClick={() => handleVerPdf(cot.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#6394EC] text-white text-sm font-medium rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6394EC] transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#6394EC] text-white text-xs sm:text-sm font-medium rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6394EC] transition-colors cursor-pointer"
                         title="Abrir PDF en nueva pestaña"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
